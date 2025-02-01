@@ -22,5 +22,5 @@ A outra coisa também que é importante explicar, há um epsilon, que indica a p
 # No meu caso o jogo é uma matriz, de tamanho variável mas vou definir como 800x800, comida que para esse primeiro treino é apenas 1 e a cobra, que pode ter um tamanho variável e estar em qualquer lugar. As ações são mais fáceis de entender e são 4(cima, baixo, esquerda e direita).
 # Foi então modelado assim, para diminuir a quantidade de estados, basicamente os estados são definidor por a, b, c, d, x, y. 
 
-![imagem de exemplo, das  definições de a,b, c, d](.imgs/game.png)
+![imagem de exemplo](./imgs/game.png)
 
