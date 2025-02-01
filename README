@@ -1,0 +1,25 @@
+## Esse repositório foi criado para um projeto pessoal de treinamento de agente
+# O meu objetivo é estudar de forma que possa me divertir também e decidi treinar um modelinho pra jogar o jogo da cobrinha
+
+# O que foi usado?
+# usei numpy, matplotlib(para mostrar dados de treino) e pygame(só pra ficar bonitinho)
+# Algoritmo principal é Q - Lerning, basicamente um mapa de estados para ações
+# No momento essa foi a única tecnica testada, mas provavelmente vou usar outras, como disse é um repositório de testes e estudos
+
+## Q - Lerning 
+# Q(s, a) ← Q(s, a) + α [ r + γ max_a' Q(s', a') - Q(s, a) ]
+
+Onde:
+- Q(s, a): O valor Q para o estado `s` e ação `a`, que representa a qualidade de tomar a ação `a` no estado `s`.
+- α (alpha): A taxa de aprendizado (learning rate), que controla o quanto o novo valor Q substitui o valor antigo (0 < α ≤ 1).
+- r: A recompensa imediata recebida após tomar a ação `a` no estado `s`.
+- γ (gamma): O fator de desconto (discount factor), que determina a importância de recompensas futuras em relação à recompensa imediata (0 ≤ γ < 1).
+- max_a' Q(s', a'): O máximo valor Q para o próximo estado `s'`, considerando todas as ações possíveis `a'`.
+
+A outra coisa também que é importante explicar, há um epsilon, que indica a probabilidade de ele estando em um estado qualquer tomar uma ação aleatória, no treinamento, apenas para explorar o mapa. Também um epsilon_decay, que é a taxa de decaimento desse mesmo epsilon.
+
+# A primeira coisa a fazer para aplicar esse algoritmo para qualquer jogo é entender estados e ações, quantos estados possíveis e quantas ações possíveis
+# No meu caso o jogo é uma matriz, de tamanho variável mas vou definir como 800x800, comida que para esse primeiro treino é apenas 1 e a cobra, que pode ter um tamanho variável e estar em qualquer lugar. As ações são mais fáceis de entender e são 4(cima, baixo, esquerda e direita).
+# Foi então modelado assim, para diminuir a quantidade de estados, basicamente os estados são definidor por a, b, c, d, x, y. 
+![imagem de exemplo, das  definições de a,b, c, d](imgs/game.png)
+
