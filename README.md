@@ -24,3 +24,18 @@ A outra coisa também que é importante explicar, há um epsilon, que indica a p
 
 ![imagem de exemplo](./imgs/game.png)
 
+# Explicação
+'a' pode assunmir 3 valores, é o valor relativo a distância da cabeça para obstatulo a esquerda, 0 se a ditância for 1, 1 se for menor que 3 ou 2
+'b', 'c' e 'd' funcionam da mesma forma, a cauda é contada como obstáculo.
+x e y são relacionados a comida
+x -> 0 se estiver na mesma linha que a comida, 1 se estiver a cima e 2 se estiver a baixo
+y -> 0 se estiver na mesma coluna, 1 direita e 2 esquerda.
+
+# Estados
+Um estado é um numero, que representar essas possibilidades, 3⁶ (três para cada variável, a, b, c, d, x, y)
+
+# Treino
+Os valores usados nos parâmetros fora:
+alpha=0.002, gamma=0.6, times=40000, maxMovies = 15, epsilon=1, epsilon_decay=0.99, min_epsilon=0.1
+Contei as vezes que o agente estava em cada ação para poder entender se ele foi treinado para todas ocasiões, a distribuição:
+![distribuição de treino](./imgs/distribuicao.png)
