@@ -49,7 +49,7 @@ actions = [0, 1, 2, 3]
 
 
 class Player:
-    def __init__(self, state, num_states=729,num_actions = 4, alpha=0.002, gamma=0.6, times=40000, maxMovies = 15, epsilon=1, epsilon_decay=0.99, min_epsilon=0.1):
+    def __init__(self, state, num_states=729,num_actions = 4, alpha=0.0015, gamma=0.65, times=60000, maxMovies = 20, epsilon=0.6, epsilon_decay=0.8, min_epsilon=0.1):
         self.q_table = np.zeros((num_states, num_actions))  # Inicializa a Q-table
         self.roudPoints = 0  # Recompensa acumulada
         self.state = state  # Estado atual
@@ -63,7 +63,7 @@ class Player:
         self.min_epsilon = min_epsilon  # Valor mínimo de epsilon
         # self.load_q_table()
     def plusMovies(self, k):
-        self.maxMovies = min(self.maxMovies + k, 500)
+        self.maxMovies = min(self.maxMovies + k, 1000)
         # print("maxMovies: ", self.maxMovies)
 
 

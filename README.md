@@ -39,3 +39,6 @@ Os valores usados nos parâmetros fora:
 alpha=0.002, gamma=0.6, times=40000, maxMovies = 15, epsilon=1, epsilon_decay=0.99, min_epsilon=0.1
 Contei as vezes que o agente estava em cada ação para poder entender se ele foi treinado para todas ocasiões, a distribuição:
 ![distribuição de treino](./imgs/distribuicao.png)
+Foi interessante tentar entender quais situações não estavam sendo treinadas, então fiz algumas reformas para deixar mais fácil e não gastar muito tempo para cada treino, gostaria de deixar ainda na casa dos segundos. Então eu fiz com que as primeiras 5 comidas fossem dropadas a 2 quadrados de distância da head(da cobra) e coloquei uma probabilidade maior de a cobra aparecer em um dos 4 cantos, pra ela ser treinada batendo na parede.
+
+

@@ -5,6 +5,7 @@ from main import Player
 import pandas as pd
 from collections import defaultdict
 from gerete import generate_training_graphs
+from pygame import font
 # Inicializa o Pygame
 pygame.init()
 
@@ -45,6 +46,7 @@ class SnakeGame:
         self.data = []  # Dados coletados
         self.i =0
         self.lives = 10
+        self.death_count = 0
     def reinit(self):
         self.snake = [(random.randint(0, WIDTH // GRID_SIZE - 1), random.randint(0, HEIGHT // GRID_SIZE - 1))]
         if random.randint(0, 10) <= 3:
@@ -92,7 +94,8 @@ class SnakeGame:
         self.data = []   # Lista para armazenar dados detalhados
         state_distribution = defaultdict(int)  # Distribuição de estados
         train_data = []  # Armazena informações de cada treino
-
+        self.font = pygame.font.SysFont('Arial', 24)  # Fonte para exibir o placar
+        self.font.__init__()
         while self.running and train < player.times:
             moves = 0
             score = 0
@@ -102,24 +105,21 @@ class SnakeGame:
                         self.running = False
                         break
                 state = self.get_state()
-                opposite_directions = {
-                    'UP': 'DOWN', 'DOWN': 'UP',
-                    'LEFT': 'RIGHT', 'RIGHT': 'LEFT'
-                }
+                
                 state_distribution[state] += 1  # Contabiliza o estado
                 action = player.get_action(state)
-                if dic_action[action] == opposite_directions[self.direction]:
-                    player.roudPoints -= 0.5  # Aplica uma penalidade alta para desencorajar a ação
-                
+            
                 self.direction = dic_action[action]
                 #trata o caso de ação inválida, a cobra não pode voltar para trás
                 
                 
                 size = len(self.snake)
+                
                 self.move()
                 
                 if size < len(self.snake):
                     player.plus(10)  # Recompensa ao comer
+                    player.plusMovies(2)
                 
                 player.live()  # Penalidade por movimento
                 moves += 1
@@ -139,7 +139,7 @@ class SnakeGame:
                     
                     train_data.append({
                         'Treino': train + 1,
-                        'Pontuação': score,
+                        'Pontuação': size - (moves*0.1),
                         'Movimentos': moves,
                         'Mortes': self.death_count,
                         'Epsilon': player.epsilon
@@ -183,38 +183,60 @@ class SnakeGame:
         test_moves = []
         test_data = []
         self.lives = 20  # Definir um número fixo de vidas para os testes
+        plays = 0  # Contador de jogadas
+        size = 0
+        dic  = []
         
-        while self.lives >= 0:
+        pygame.font.init()  # Inicializa o módulo de fontes
+        font = pygame.font.SysFont('Arial', 24)  # Fonte para exibir o placar
+
+        while self.lives >= 0 and plays < 20:
             moves = 0
             score = 0
+            mortes = 0
+            size = 0
+            actSize = 0
             while self.running:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         self.running = False
+                
                 state = self.get_state()
                 action = player.play(state)
                 self.direction = dic_action[action]
+                size = len(self.snake)
                 self.move()
+                
                 if self.die:
-                    # self.lives -= 1
+                    mortes += 1
                     self.die = False
                     break
+                
                 moves += 1
-                score = len(self.snake) - (moves*0.1)
+                score = len(self.snake) - (moves * 0.1)
+
+                # Desenha o jogo
                 self.draw()
+                # Exibe o tamanho da cobra no canto da tela
+                text_surface = font.render(f'Tamanho: {size}', True, (255, 255, 255))  # Texto branco
+                actSize = size
+                pygame.display
+                screen.blit(text_surface, (screen.get_width() - 150, 10))  # Posição no canto superior direito
+                # pygame.
+                pygame.display.update()
                 pygame.time.delay(SPEED)
-            self.lives -= 1
-            test_scores.append(score)
-            test_moves.append(moves)
-            test_data.append({'Score': score, 'Movimentos': moves, 'Vidas Restantes': self.lives})
-            
+            dic.append([actSize, moves])
+            plays += 1
+
+        print(dic)
         pygame.quit()
-        
+
         # Salvar estatísticas de teste
         test_df = pd.DataFrame(test_data)
         test_df.to_csv('test_results.csv', index=False)
         np.save('test_stats.npy', {'Media_Pontos': np.mean(test_scores), 'Media_Movimentos': np.mean(test_moves)})
         print("📊 Estatísticas de Teste Salvas.")
+
 
     def move(self):
         head_x, head_y = self.snake[0]
@@ -225,6 +247,7 @@ class SnakeGame:
         if  not (0 <= new_head[0] < WIDTH // GRID_SIZE and 0 <= new_head[1] < HEIGHT // GRID_SIZE):
             self.reinit()
             self.die = True
+            self.death_count += 1
             return False
 
         if new_head in self.snake[1:]:
@@ -317,7 +340,7 @@ class SnakeGame:
 if __name__ == "__main__":
     game = SnakeGame()
     player = Player(game.get_state())
-    player.load_q_table()
+    # player.load_q_table()
     game.bot_play(player)
-    # generate_training_graphs('training_data_40000.csv', 'test_results.csv', 'training_stats_40000.npy', 'test_stats.npy', 'state_distribution_40000.csv')
+    generate_training_graphs('training_data_40000.csv', 'test_results.csv', 'training_stats_40000.npy', 'test_stats.npy', 'state_distribution_40000.csv')
     # game.auto_move(player)
