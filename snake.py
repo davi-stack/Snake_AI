@@ -177,6 +177,7 @@ class SnakeGame:
         
         player.save_q_table()
         pygame.quit()
+    
     def bot_play(self, player):
         """Executa o bot para testar o modelo e coleta estatísticas."""
         test_scores = []
@@ -184,8 +185,7 @@ class SnakeGame:
         test_data = []
         self.lives = 20  # Definir um número fixo de vidas para os testes
         plays = 0  # Contador de jogadas
-        size = 0
-        dic  = []
+        dic = []
         
         pygame.font.init()  # Inicializa o módulo de fontes
         font = pygame.font.SysFont('Arial', 24)  # Fonte para exibir o placar
@@ -193,9 +193,7 @@ class SnakeGame:
         while self.lives >= 0 and plays < 20:
             moves = 0
             score = 0
-            mortes = 0
             size = 0
-            actSize = 0
             while self.running:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -208,7 +206,7 @@ class SnakeGame:
                 self.move()
                 
                 if self.die:
-                    mortes += 1
+                    self.lives -= 1  # Reduzir vidas quando a cobra morre
                     self.die = False
                     break
                 
@@ -219,25 +217,26 @@ class SnakeGame:
                 self.draw()
                 # Exibe o tamanho da cobra no canto da tela
                 text_surface = font.render(f'Tamanho: {size}', True, (255, 255, 255))  # Texto branco
-                actSize = size
-                pygame.display
                 screen.blit(text_surface, (screen.get_width() - 150, 10))  # Posição no canto superior direito
-                # pygame.
-                pygame.display.update()
+                
                 pygame.time.delay(SPEED)
-            dic.append([actSize, moves])
+            
+            # Coleta de dados após cada jogo
+            dic.append([size, moves])
+            test_scores.append(score)
+            test_moves.append(moves)
+            test_data.append([plays, score, moves, size])
+            
             plays += 1
 
         print(dic)
         pygame.quit()
 
         # Salvar estatísticas de teste
-        test_df = pd.DataFrame(test_data)
+        test_df = pd.DataFrame(test_data, columns=['Jogo', 'Pontuação', 'Movimentos', 'Tamanho'])
         test_df.to_csv('test_results.csv', index=False)
         np.save('test_stats.npy', {'Media_Pontos': np.mean(test_scores), 'Media_Movimentos': np.mean(test_moves)})
         print("📊 Estatísticas de Teste Salvas.")
-
-
     def move(self):
         head_x, head_y = self.snake[0]
         dx, dy = directions[self.direction]
@@ -251,6 +250,8 @@ class SnakeGame:
             return False
 
         if new_head in self.snake[1:]:
+            self.die = True
+            self.death_count += 1
             self.reinit()
             return False
         
@@ -340,7 +341,7 @@ class SnakeGame:
 if __name__ == "__main__":
     game = SnakeGame()
     player = Player(game.get_state())
-    # player.load_q_table()
+    player.load_q_table()
     game.bot_play(player)
-    generate_training_graphs('training_data_40000.csv', 'test_results.csv', 'training_stats_40000.npy', 'test_stats.npy', 'state_distribution_40000.csv')
+    # generate_training_graphs('training_data_40000.csv', 'test_results.csv', 'training_stats_40000.npy', 'test_stats.npy', 'state_distribution_40000.csv')
     # game.auto_move(player)

@@ -17,10 +17,9 @@ Onde:
 - max_a' Q(s', a'): O máximo valor Q para o próximo estado `s'`, considerando todas as ações possíveis `a'`.
 
 A outra coisa também que é importante explicar, há um epsilon, que indica a probabilidade de ele estando em um estado qualquer tomar uma ação aleatória, no treinamento, apenas para explorar o mapa. Também um epsilon_decay, que é a taxa de decaimento desse mesmo epsilon.
-
-# A primeira coisa a fazer para aplicar esse algoritmo para qualquer jogo é entender estados e ações, quantos estados possíveis e quantas ações possíveis
-# No meu caso o jogo é uma matriz, de tamanho variável mas vou definir como 800x800, comida que para esse primeiro treino é apenas 1 e a cobra, que pode ter um tamanho variável e estar em qualquer lugar. As ações são mais fáceis de entender e são 4(cima, baixo, esquerda e direita).
-# Foi então modelado assim, para diminuir a quantidade de estados, basicamente os estados são definidor por a, b, c, d, x, y. 
+A primeira coisa a fazer para aplicar esse algoritmo para qualquer jogo é entender estados e ações, quantos estados possíveis e quantas ações possíveis
+No meu caso o jogo é uma matriz, de tamanho variável mas vou definir como 800x800, comida que para esse primeiro treino é apenas 1 e a cobra, que pode ter um tamanho variável e estar em qualquer lugar. As ações são mais fáceis de entender e são 4(cima, baixo, esquerda e direita).
+Foi então modelado assim, para diminuir a quantidade de estados, basicamente os estados são definidor por a, b, c, d, x, y. 
 
 ![imagem de exemplo](./imgs/game.png)
 

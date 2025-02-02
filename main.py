@@ -94,6 +94,7 @@ class Player:
 
         return action
     
+
     def save_q_table(self, filename='q_table.npy'):
         """Salva a Q-table em um arquivo."""
         np.save(filename, self.q_table)
