@@ -15,7 +15,7 @@ GRID_SIZE = 20
 SNAKE_COLOR = (0, 255, 0)
 FOOD_COLOR = (255, 0, 0)
 BG_COLOR = (0, 0, 0)
-SPEED = 60 # Velocidade do jogo (ms)
+SPEED = 45 # Velocidade do jogo (ms)
 
 # Criação da tela
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -89,16 +89,14 @@ class SnakeGame:
         """Executa os movimentos do agente, coleta dados e salva estatísticas."""
         self.death_count = 0  # Reinicia contagem de mortes
         train = 0
-        all_scores = []  # Lista para armazenar pontuações
-        all_moves = []   # Lista para armazenar número de movimentos
-        self.data = []   # Lista para armazenar dados detalhados
+        
         state_distribution = defaultdict(int)  # Distribuição de estados
-        train_data = []  # Armazena informações de cada treino
-        self.font = pygame.font.SysFont('Arial', 24)  # Fonte para exibir o placar
-        self.font.__init__()
+        
         while self.running and train < player.times:
             moves = 0
             score = 0
+            self.reinit()
+            
             while self.running and moves < max_moves:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -108,7 +106,6 @@ class SnakeGame:
                 
                 state_distribution[state] += 1  # Contabiliza o estado
                 action = player.get_action(state)
-            
                 self.direction = dic_action[action]
                 #trata o caso de ação inválida, a cobra não pode voltar para trás
                 
@@ -116,7 +113,13 @@ class SnakeGame:
                 size = len(self.snake)
                 
                 self.move()
+                if train < 15:
+                    self.draw()
+                    pygame.time.delay(SPEED)
                 
+                if train > player.times - 10:
+                    self.draw()
+                    pygame.time.delay(SPEED)
                 if size < len(self.snake):
                     player.plus(10)  # Recompensa ao comer
                     player.plusMovies(2)
@@ -134,16 +137,7 @@ class SnakeGame:
                     last_action = action
                     
                     self.data.append([self.death_count, moves, score, last_action])
-                    all_scores.append(score)
-                    all_moves.append(moves)
-                    
-                    train_data.append({
-                        'Treino': train + 1,
-                        'Pontuação': size - (moves*0.1),
-                        'Movimentos': moves,
-                        'Mortes': self.death_count,
-                        'Epsilon': player.epsilon
-                    })
+                   
                     
                     player.die(last_state, last_action)
                     train += 1
@@ -151,32 +145,10 @@ class SnakeGame:
             
             player.reset_rewards()
         
-        # Converter para NumPy para análise
-        self.data = np.array(self.data)
         
-        # Criar DataFrame Pandas para salvar CSV
-        df = pd.DataFrame(self.data, columns=['Mortes', 'Movimentos', 'Pontuação', 'Última Ação'])
-        df.to_csv(f'training_data_{player.times}.csv', index=False)
-        
-        # Salvar estatísticas gerais
-        stats = {
-            'Media_Pontos': np.mean(all_scores) if all_scores else 0,
-            'Media_Movimentos': np.mean(all_moves) if all_moves else 0,
-            'Total_Mortes': self.death_count
-        }
-        np.save(f'training_stats_{player.times}.npy', stats)
-        print("📊 Estatísticas gerais:", stats)
-        
-        # Salvar distribuição de estados
-        state_df = pd.DataFrame(list(state_distribution.items()), columns=['Estado', 'Frequencia'])
-        state_df.to_csv(f'state_distribution_{player.times}.csv', index=False)
-        
-        # Salvar dados de cada treino
-        train_df = pd.DataFrame(train_data)
-        train_df.to_csv(f'training_session_{player.times}.csv', index=False)
         
         player.save_q_table()
-        pygame.quit()
+        # pygame.quit()
     
     def bot_play(self, player):
         """Executa o bot para testar o modelo e coleta estatísticas."""
@@ -190,11 +162,12 @@ class SnakeGame:
         pygame.font.init()  # Inicializa o módulo de fontes
         font = pygame.font.SysFont('Arial', 24)  # Fonte para exibir o placar
 
-        while self.lives >= 0 and plays < 20:
+        while  plays < 15:
             moves = 0
             score = 0
             size = 0
-            while self.running:
+            self.die = False
+            while self.running and not self.die and moves < 500:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         self.running = False
@@ -215,10 +188,8 @@ class SnakeGame:
 
                 # Desenha o jogo
                 self.draw()
-                # Exibe o tamanho da cobra no canto da tela
-                text_surface = font.render(f'Tamanho: {size}', True, (255, 255, 255))  # Texto branco
-                screen.blit(text_surface, (screen.get_width() - 150, 10))  # Posição no canto superior direito
-                
+                # # Exibe o tamanho da cobra no canto da tela
+               
                 pygame.time.delay(SPEED)
             
             # Coleta de dados após cada jogo
@@ -229,14 +200,18 @@ class SnakeGame:
             
             plays += 1
 
+        soma = 0 
+        nums = 0
+        soma_moves = 0
+        for elm in dic:
+            nums+=1
+            soma += elm[0]
+            soma_moves += elm[1]
+        print(f"🐍 Tamanho médio da cobra: {soma / nums:.2f}"
+              f"\n🏃‍♂️ Média de movimentos: {soma_moves / nums:.2f}")
         print(dic)
         pygame.quit()
 
-        # Salvar estatísticas de teste
-        test_df = pd.DataFrame(test_data, columns=['Jogo', 'Pontuação', 'Movimentos', 'Tamanho'])
-        test_df.to_csv('test_results.csv', index=False)
-        np.save('test_stats.npy', {'Media_Pontos': np.mean(test_scores), 'Media_Movimentos': np.mean(test_moves)})
-        print("📊 Estatísticas de Teste Salvas.")
     def move(self):
         head_x, head_y = self.snake[0]
         dx, dy = directions[self.direction]
@@ -249,11 +224,6 @@ class SnakeGame:
             self.death_count += 1
             return False
 
-        if new_head in self.snake[1:]:
-            self.die = True
-            self.death_count += 1
-            self.reinit()
-            return False
         
         # Adiciona nova cabeça
         self.snake.insert(0, new_head)
@@ -288,21 +258,6 @@ class SnakeGame:
         c = 0 if head_y == 800 else 1 if 798 < head_y < 800 else 2
         d = 0 if head_x == 800 else 1 if 798 < head_x < 800 else 2
 
-        #ver se a calda está perto
-        #se a calda estiver perto, a direita, mudar c para 0, se estiver a esquerda mudar a para 0, se estiver em cima mudar b para 0, se estiver em baixo mudar d para 0
-        dir = [self.snake[0][0] + 1, self.snake[0][1]]
-        esq = [self.snake[0][0] - 1, self.snake[0][1]]
-        cima = [self.snake[0][0], self.snake[0][1] - 1]
-        baixo = [self.snake[0][0], self.snake[0][1] + 1]
-
-        if dir in self.snake:
-            c = 0
-        if esq in self.snake:
-            a = 0
-        if cima in self.snake:
-            b = 0
-        if baixo in self.snake:
-            d = 0
 
         
         
@@ -341,7 +296,6 @@ class SnakeGame:
 if __name__ == "__main__":
     game = SnakeGame()
     player = Player(game.get_state())
+    game.auto_move(player)
     player.load_q_table()
     game.bot_play(player)
-    # generate_training_graphs('training_data_40000.csv', 'test_results.csv', 'training_stats_40000.npy', 'test_stats.npy', 'state_distribution_40000.csv')
-    # game.auto_move(player)
